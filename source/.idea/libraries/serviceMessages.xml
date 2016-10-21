@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="agent-api">
+  <library name="serviceMessages">
     <CLASSES>
-      <root url="jar://$TeamCityDistribution$/devPackage/agent-api.jar!/" />
+      <root url="jar://$TeamCityDistribution$/devPackage/serviceMessages.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

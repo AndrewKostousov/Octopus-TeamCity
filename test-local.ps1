@@ -8,12 +8,12 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 # If you followed the instructions in Read.me then this script should just work.
 # If you need to run the script against a different version of the JDK then change the path below:  
-$JdkHome = "C:\Program Files\Java\jdk1.6.0_38"
+$JdkHome = "C:\Program Files\Java\jdk1.6.0_45"
 
 #
 # TeamCity directories. First is where you installed TeamCity to. Second is the TeamCity data directory.
 $TeamCityDistribution = "C:\TeamCity"
-$TeamCityData = "C:\ProgramData\JetBrains\TeamCity"
+$TeamCityData = "d:\temp\team-city"
 
 
 Stop-Service TeamCity
@@ -21,7 +21,7 @@ Stop-Service TCBuildAgent
 
 pushd .\source
 
-& ant "-Dteamcity.distribution=$TeamCityDistribution" "-Djdk.home.1.6=$JdkHome"
+#& ant "-Dteamcity.distribution=$TeamCityDistribution" "-Djdk.home.1.6=$JdkHome"
 Copy-Item ".\dist\Octopus.TeamCity.zip" "$TeamCityData\plugins\Octopus.TeamCity.zip" -Force
 
 popd
