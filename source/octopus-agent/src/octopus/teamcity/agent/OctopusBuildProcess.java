@@ -34,11 +34,11 @@ public abstract class OctopusBuildProcess implements BuildProcess {
     private final AgentRunningBuild runningBuild;
     private final BuildRunnerContext context;
     private Process process;
-    private File extractedTo;
+    protected File extractedTo;
     private OutputReaderThread standardError;
     private OutputReaderThread standardOutput;
     private boolean isFinished;
-    private BuildProgressLogger logger;
+    protected BuildProgressLogger logger;
 
     protected OctopusBuildProcess(@NotNull AgentRunningBuild runningBuild, @NotNull BuildRunnerContext context) {
         this.runningBuild = runningBuild;
@@ -80,7 +80,7 @@ public abstract class OctopusBuildProcess implements BuildProcess {
     protected void extractNugetExe() throws RunBuildException {
         final File tempDirectory = runningBuild.getBuildTempDirectory();
         try {
-            extractedTo = new File(tempDirectory, "octopnp-temp");
+            extractedTo = new File(tempDirectory, "octopnpTmp");
             if (!extractedTo.exists()) {
                 if (!extractedTo.mkdirs())
                     throw new RuntimeException("Unable to create temp output directory " + extractedTo);
@@ -90,6 +90,46 @@ public abstract class OctopusBuildProcess implements BuildProcess {
             extractor.extractNugetTo(extractedTo.getAbsolutePath());
         } catch (Exception e) {
             final String message = "Unable to create temporary file in " + tempDirectory + " for OctoPnP: " + e.getMessage();
+            Logger.getInstance(getClass().getName()).error(message, e);
+            throw new RunBuildException(message);
+        }
+    }
+
+    protected void runNuget(final OctopusCommandBuilder command) throws RunBuildException {
+        String[] userVisibleCommand = command.buildMaskedCommand();
+        String[] realCommand = command.buildCommand();
+
+        logger = runningBuild.getBuildLogger();
+        logger.activityStarted("OctoPnP", DefaultMessagesInfo.BLOCK_TYPE_INDENTATION);
+        logger.message("Running command:   nuget.exe " + StringUtils.arrayToDelimitedString(userVisibleCommand, " "));
+        logger.progressMessage(getLogMessage());
+
+        try {
+            Runtime runtime = Runtime.getRuntime();
+
+            ArrayList<String> arguments = new ArrayList<String>();
+            arguments.add(new File(extractedTo, "\\nuget.exe").getAbsolutePath());
+            arguments.addAll(Arrays.asList(realCommand));
+
+            process = runtime.exec(arguments.toArray(new String[arguments.size()]), null, context.getWorkingDirectory());
+
+            final LoggingProcessListener listener = new LoggingProcessListener(logger);
+
+            standardError = new OutputReaderThread(process.getErrorStream(), new OutputWriter() {
+                public void write(String text) {
+                    listener.onErrorOutput(text);
+                }
+            });
+            standardOutput = new OutputReaderThread(process.getInputStream(), new OutputWriter() {
+                public void write(String text) {
+                    listener.onStandardOutput(text);
+                }
+            });
+
+            standardError.start();
+            standardOutput.start();
+        } catch (IOException e) {
+            final String message = "Error from nuget.exe: " + e.getMessage();
             Logger.getInstance(getClass().getName()).error(message, e);
             throw new RunBuildException(message);
         }
@@ -178,14 +218,14 @@ public abstract class OctopusBuildProcess implements BuildProcess {
             standardError.join();
             standardOutput.join();
 
-            logger.message("Octo.exe exit code: " + exitCode);
-            logger.activityFinished("Octopus Deploy", DefaultMessagesInfo.BLOCK_TYPE_INDENTATION);
+            logger.message("nuget.exe exit code: " + exitCode);
+            logger.activityFinished("OctoPnP", DefaultMessagesInfo.BLOCK_TYPE_INDENTATION);
 
             isFinished = true;
         }
         catch (InterruptedException e) {
             isFinished = true;
-            final String message = "Unable to wait for Octo.exe: " + e.getMessage();
+            final String message = "Unable to wait for nuget.exe: " + e.getMessage();
             Logger.getInstance(getClass().getName()).error(message, e);
             throw new RunBuildException(message);
         }

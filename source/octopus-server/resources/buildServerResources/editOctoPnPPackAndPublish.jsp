@@ -17,7 +17,7 @@
   </td>
 </tr>
 <tr>
-  <th>API key:<l:star/></th>
+  <th>Octopus API key:<l:star/></th>
   <td>
     <props:passwordProperty name="${keys.apiKey}" className="longField"/>
     <span class="error" id="error_${keys.apiKey}"></span>
@@ -28,21 +28,21 @@
 
 <l:settingsGroup title="Packages">
   <tr>
-    <th>Package Version:</th>
-    <td>
-      <props:textProperty name="${keys.packageVersionKey}" className="longField"/>
-      <span class="error" id="error_${keys.packageVersionKey}"></span>
-      <span class="smallNote">The number to use for this release, e.g., <code>1.0.%build.number%</code>. Overrides the version number from the .nuspec file.</span>
-    </td>
-  </tr>
-  <tr>
     <th>.nuspec file paths:<l:star/></th>
     <td>
       <props:multilineProperty name="${keys.nuspecPathsKey}" rows="5" cols="50" linkTitle="Nuspec path patterns" expanded="true" />
       <span class="error" id="error_${keys.nuspecPathsKey}"></span>
-    <span class="smallNote">
+      <span class="smallNote">
         Newline-separated paths of .nuspec files to create packages from, that will be published, e.g. MyProject/**/octopus-package.nuspec.
       </span>
     </td>
   </tr>
+  <tr>
+      <th>Package Version:</th>
+      <td>
+        <props:textProperty name="${keys.packageVersionKey}" className="longField"/>
+        <span class="error" id="error_${keys.packageVersionKey}"></span>
+        <span class="smallNote">The number to use for this release, e.g., <code>1.0.%build.number%</code>. Overrides the version number from the .nuspec file.</span>
+      </td>
+    </tr>
 </l:settingsGroup>

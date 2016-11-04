@@ -25,6 +25,7 @@ import jetbrains.buildServer.agent.BuildRunnerContext;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsBuilder;
 import jetbrains.buildServer.agent.impl.artifacts.ArtifactsCollection;
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessage;
+import jetbrains.buildServer.util.StringUtil;
 import octopus.teamcity.common.OctopusConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,16 +61,19 @@ public class OctoPnPPackAndPublishBuildProcess extends OctopusBuildProcess {
         final OctopusConstants constants = OctopusConstants.Instance;
         final String nuspecPaths = parameters.get(constants.getNuspecPathsKey());
 
+        logger.message("nuspecPaths: " + nuspecPaths);
+
         final ArtifactsBuilder builder = new ArtifactsBuilder();
         builder.setPreprocessors(preprocessors);
         builder.setBaseDir(myRunningBuild.getCheckoutDirectory());
         builder.setArtifactsPaths(nuspecPaths);
-
         artifactsCollections = builder.build();
 
         extractNugetExe();
+        OctopusCommandBuilder arguments = createCommand();
+        runNuget(arguments);
 
-        BuildProgressLogger logger = myRunningBuild.getBuildLogger();
+        /*BuildProgressLogger logger = myRunningBuild.getBuildLogger();
         for (ArtifactsCollection artifactsCollection : artifactsCollections) {
             for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                 final File source = fileStringEntry.getKey();
@@ -77,7 +81,7 @@ public class OctoPnPPackAndPublishBuildProcess extends OctopusBuildProcess {
                 String message = ServiceMessage.asString("publishArtifacts", source.getAbsolutePath());
                 logger.message(message);
             }
-        }
+        }*/
     }
 
     @Override
@@ -91,32 +95,33 @@ public class OctoPnPPackAndPublishBuildProcess extends OctopusBuildProcess {
                 final ArrayList<String> commands = new ArrayList<String>();
                 final String serverUrl = parameters.get(constants.getServerKey());
                 final String apiKey = parameters.get(constants.getApiKey());
-                final String commandLineArguments = parameters.get(constants.getCommandLineArgumentsKey());
 
-                final boolean forcePush = Boolean.parseBoolean(parameters.get(constants.getForcePushKey()));
+                String packageVersion = null;
+                final String packageVersionKey = constants.getPackageVersionKey();
+                if (parameters.containsKey(packageVersionKey)) {
+                    packageVersion = parameters.get(packageVersionKey);
+                }
 
-                commands.add("push");
-                commands.add("--server");
-                commands.add(serverUrl);
-                commands.add("--apikey");
-                commands.add(masked ? "SECRET" : apiKey);
-
+                commands.add("pack");
                 for (ArtifactsCollection artifactsCollection : artifactsCollections) {
                     for (Map.Entry<File, String> fileStringEntry : artifactsCollection.getFilePathMap().entrySet()) {
                         final File source = fileStringEntry.getKey();
-
-                        commands.add("--package");
                         commands.add(source.getAbsolutePath());
                     }
                 }
-
-                if (forcePush) {
-                    commands.add("--replace-existing");
+                commands.add("-NoPackageAnalysis");
+                if (!StringUtil.isEmptyOrSpaces(packageVersion))
+                {
+                    commands.add("-Version");
+                    commands.add(packageVersion);
                 }
+                commands.add("-OutputDirectory");
+                commands.add(extractedTo.getAbsolutePath());
 
-                if (commandLineArguments != null && !commandLineArguments.isEmpty()) {
-                    commands.addAll(splitSpaceSeparatedValues(commandLineArguments));
-                }
+                /*commands.add("--server");
+                commands.add(serverUrl);
+                commands.add("--apikey");
+                commands.add(masked ? "SECRET" : apiKey);*/
 
                 return commands.toArray(new String[commands.size()]);
             }
