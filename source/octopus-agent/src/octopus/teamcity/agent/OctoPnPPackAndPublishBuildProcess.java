@@ -61,7 +61,7 @@ public class OctoPnPPackAndPublishBuildProcess extends OctopusBuildProcess {
         final OctopusConstants constants = OctopusConstants.Instance;
         final String nuspecPaths = parameters.get(constants.getNuspecPathsKey());
 
-        logger.message("nuspecPaths: " + nuspecPaths);
+        runningBuild.getBuildLogger().message("nuspecPaths: " + nuspecPaths);
 
         final ArtifactsBuilder builder = new ArtifactsBuilder();
         builder.setPreprocessors(preprocessors);

@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 public abstract class OctopusBuildProcess implements BuildProcess {
-    private final AgentRunningBuild runningBuild;
+    protected final AgentRunningBuild runningBuild;
     private final BuildRunnerContext context;
     private Process process;
     protected File extractedTo;
