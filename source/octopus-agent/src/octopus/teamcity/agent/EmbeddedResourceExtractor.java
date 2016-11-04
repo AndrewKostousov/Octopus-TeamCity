@@ -34,6 +34,10 @@ public class EmbeddedResourceExtractor {
         extractFile("/resources/3/0/Octo.exe.config", destinationPath + "\\3.0\\Octo.exe.config");
 	}
 
+    public void extractNugetTo(String destinationPath) throws Exception {
+        extractFile("/resources/nuget.exe", destinationPath + "\\nuget.exe");
+    }
+
     private void extractFile(String resourceName, String destinationName) throws Exception {
         int attempts = 0;
         while (true) {

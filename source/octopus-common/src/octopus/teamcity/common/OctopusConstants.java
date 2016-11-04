@@ -96,6 +96,14 @@ public class OctopusConstants {
         return "octopus_releasenumber";
     }
 	
+	public String getPackageVersionKey() {
+        return "octopnp_package_version";
+    }
+
+    public String getNuspecPathsKey() {
+        return "octopnp_nuspec_paths";
+    }
+
 	public String getChannelNameKey() {
 		return "octopus_channel_name";
 	}
@@ -111,4 +119,6 @@ public class OctopusConstants {
     public static final String DEPLOY_RELEASE_RUNNER_TYPE = "octopus.deploy.release";
     public static final String PROMOTE_RELEASE_RUNNER_TYPE = "octopus.promote.release";
     public static final String PUSH_PACKAGE_RUNNER_TYPE = "octopus.push.package";
+
+    public static final String OCTOPNP_PACK_AND_PUBLISH_RUNNER_TYPE = "octopnp.pack.and.publish";
 }

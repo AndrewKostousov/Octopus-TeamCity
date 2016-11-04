@@ -77,6 +77,24 @@ public abstract class OctopusBuildProcess implements BuildProcess {
         }
     }
 
+    protected void extractNugetExe() throws RunBuildException {
+        final File tempDirectory = runningBuild.getBuildTempDirectory();
+        try {
+            extractedTo = new File(tempDirectory, "octopnp-temp");
+            if (!extractedTo.exists()) {
+                if (!extractedTo.mkdirs())
+                    throw new RuntimeException("Unable to create temp output directory " + extractedTo);
+            }
+
+            EmbeddedResourceExtractor extractor = new EmbeddedResourceExtractor();
+            extractor.extractNugetTo(extractedTo.getAbsolutePath());
+        } catch (Exception e) {
+            final String message = "Unable to create temporary file in " + tempDirectory + " for OctoPnP: " + e.getMessage();
+            Logger.getInstance(getClass().getName()).error(message, e);
+            throw new RunBuildException(message);
+        }
+    }
+
     private void startOcto(final OctopusCommandBuilder command) throws RunBuildException {
         String[] userVisibleCommand = command.buildMaskedCommand();
         String[] realCommand = command.buildCommand();
